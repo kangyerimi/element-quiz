@@ -21,13 +21,58 @@ class Quiz:
         return user_answer == self.answer
 
 
+def get_default_quizzes():
+    """처음 실행할 때 사용할 기본 원소 퀴즈 목록을 돌려준다."""
+    return [
+        Quiz(
+            "원소 기호 'Fe'는 어떤 원소일까요?",
+            ["금", "은", "철", "구리"],
+            3,
+        ),
+        Quiz(
+            "원자 번호 1번, 우주에서 가장 많고 가장 가벼운 원소는?",
+            ["수소", "헬륨", "산소", "탄소"],
+            1,
+        ),
+        Quiz(
+            "원소 기호 'Au'는 어떤 원소일까요?",
+            ["은", "금", "구리", "알루미늄"],
+            2,
+        ),
+        Quiz(
+            "풍선에 넣으면 둥둥 떠오르는 가벼운 기체 원소는?",
+            ["산소", "질소", "헬륨", "염소"],
+            3,
+        ),
+        Quiz(
+            "실온에서 유일하게 액체 상태인 금속 원소는?",
+            ["철", "수은", "납", "아연"],
+            2,
+        ),
+        Quiz(
+            "다이아몬드와 연필심(흑연)을 이루는 원자 번호 6번 원소는?",
+            ["규소", "질소", "탄소", "붕소"],
+            3,
+        ),
+        Quiz(
+            "원소 기호 'Na'는 어떤 원소일까요?",
+            ["네온", "니켈", "질소", "나트륨"],
+            4,
+        ),
+        Quiz(
+            "우리가 숨 쉴 때 꼭 필요한 원자 번호 8번 원소는?",
+            ["질소", "산소", "수소", "아르곤"],
+            2,
+        ),
+    ]
+
+
 # 이 파일을 직접 실행했을 때만 동작하는 테스트 코드
 if __name__ == "__main__":
-    sample = Quiz(
-        "원소 기호 'Fe'는 어떤 원소일까요?",
-        ["금", "은", "철", "구리"],
-        3,
-    )
-    sample.display(1)
-    print("3번을 골랐을 때:", sample.is_correct(3))
-    print("1번을 골랐을 때:", sample.is_correct(1))
+    quizzes = get_default_quizzes()
+    print(f"📚 기본 퀴즈 {len(quizzes)}개")
+
+    for number, quiz in enumerate(quizzes, start=1):
+        quiz.display(number)
+        correct_text = quiz.choices[quiz.answer - 1]
+        print(f"  ✅ 정답: {quiz.answer}번 {correct_text}")
