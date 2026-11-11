@@ -272,3 +272,45 @@ element-quiz/
 > 처음 실행하면 자동으로 생성됩니다.
 
 > 🔄 이 문장은 clone한 저장소에서 추가하고, 원래 저장소에서 pull로 가져온 문장입니다.
+
+
+---
+
+## 7. 실행 화면
+
+### 메뉴 (저장된 데이터 불러오기)
+![메뉴 화면](docs/screenshots/menu.png)
+
+### 퀴즈 풀기
+![퀴즈 풀기 화면](docs/screenshots/play.png)
+
+### 퀴즈 결과 (최고 점수 갱신)
+![퀴즈 결과 화면](docs/screenshots/play_result.png)
+
+### 퀴즈 추가 (입력 검증 포함)
+![퀴즈 추가 화면](docs/screenshots/add_quiz.png)
+
+### 퀴즈 목록
+![퀴즈 목록 화면](docs/screenshots/list.png)
+
+### 점수 확인
+![점수 확인 화면](docs/screenshots/score.png)
+
+---
+
+## 8. 예외 처리 화면
+
+### 잘못된 입력 처리
+빈 입력, 숫자가 아닌 입력, 범위 밖 숫자를 입력하면 안내 후 다시 입력받습니다.
+
+![잘못된 입력 처리](docs/screenshots/invalid_input.png)
+
+### Ctrl + C 안전 종료
+실행 중 Ctrl + C를 눌러도 비정상 종료하지 않고, 데이터를 저장한 뒤 안전하게 종료합니다.
+
+![Ctrl+C 안전 종료](docs/screenshots/ctrl_c.png)
+
+### 저장 파일 손상 복구
+state.json이 손상되어도 안내 메시지를 보여주고 기본 퀴즈로 복구합니다.
+
+![저장 파일 손상 복구](docs/screenshots/corrupted_file.png)
