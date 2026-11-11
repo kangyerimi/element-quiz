@@ -46,6 +46,18 @@ def get_number(prompt, min_value, max_value):
         return number
 
 
+def get_text(prompt):
+    """비어 있지 않은 글자를 입력받아 돌려준다."""
+    while True:
+        text = input(prompt).strip()
+
+        if text == "":
+            print("⚠️ 내용이 비어 있습니다. 다시 입력하세요.")
+            continue
+
+        return text
+
+
 def load_state():
     """state.json에서 퀴즈 목록과 최고 점수를 불러온다.
     파일이 없거나 손상되면 기본 퀴즈로 시작한다."""
@@ -126,6 +138,24 @@ def play_quiz(quizzes):
     print("=" * 40)
 
 
+def add_quiz(quizzes):
+    """새 퀴즈를 입력받아 퀴즈 목록에 추가한다."""
+    print("\n📌 새로운 퀴즈를 추가합니다.\n")
+
+    question = get_text("문제를 입력하세요: ")
+
+    choices = []
+    for i in range(1, 5):
+        choice = get_text(f"선택지 {i}: ")
+        choices.append(choice)
+
+    answer = get_number("정답 번호 (1-4): ", 1, 4)
+
+    new_quiz = Quiz(question, choices, answer)
+    quizzes.append(new_quiz)
+    print(f"\n✅ 퀴즈가 추가되었습니다! (총 {len(quizzes)}개)")
+
+
 def main():
     """프로그램 전체 흐름을 담당한다."""
     quizzes, best_score = load_state()
@@ -138,7 +168,8 @@ def main():
             if choice == 1:
                 play_quiz(quizzes)
             elif choice == 2:
-                print("📌 퀴즈 추가 기능은 준비 중입니다.")
+                add_quiz(quizzes)
+                save_state(quizzes, best_score)
             elif choice == 3:
                 print("📋 퀴즈 목록 기능은 준비 중입니다.")
             elif choice == 4:
