@@ -1,8 +1,11 @@
 import json
+import os
 
 from quiz import Quiz, get_default_quizzes
 
-STATE_FILE = "state.json"  # 저장 파일 이름 (프로젝트 폴더에 생김)
+# 저장 파일 경로: 어느 폴더에서 실행해도 항상 "프로젝트 루트"의 state.json을 사용한다.
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+STATE_FILE = os.path.join(PROJECT_ROOT, "state.json")
 
 
 class QuizGame:
@@ -63,11 +66,17 @@ class QuizGame:
 
             quizzes = []
             for item in data["quizzes"]:
+                self.check_quiz_data(item)
                 quiz = Quiz(item["question"], item["choices"], item["answer"])
                 quizzes.append(quiz)
 
+            best_score = data["best_score"]
+            if best_score is not None:
+                if type(best_score) is not int or not 0 <= best_score <= 100:
+                    raise ValueError("최고 점수 형식이 올바르지 않음")
+
             self.quizzes = quizzes
-            self.best_score = data["best_score"]
+            self.best_score = best_score
 
             if self.best_score is None:
                 print(f"📂 저장된 데이터를 불러왔습니다. "
@@ -91,6 +100,23 @@ class QuizGame:
             # 그 밖에 파일을 읽을 수 없는 경우
             print("⚠️ 저장 파일을 읽을 수 없어 기본 퀴즈로 시작합니다.")
             self.reset_to_default()
+
+    def check_quiz_data(self, item):
+        """파일에서 읽은 퀴즈 한 개의 형식을 검사한다.
+        형식이 틀리면 ValueError를 일으켜 '손상된 파일'로 처리되게 한다."""
+        if type(item["question"]) is not str or item["question"].strip() == "":
+            raise ValueError("문제 형식이 올바르지 않음")
+
+        choices = item["choices"]
+        if type(choices) is not list or len(choices) != 4:
+            raise ValueError("선택지는 4개여야 함")
+        for choice in choices:
+            if type(choice) is not str:
+                raise ValueError("선택지 형식이 올바르지 않음")
+
+        answer = item["answer"]
+        if type(answer) is not int or not 1 <= answer <= 4:
+            raise ValueError("정답은 1~4 사이의 숫자여야 함")
 
     def reset_to_default(self):
         """기본 퀴즈와 빈 최고 점수로 초기화한다."""
