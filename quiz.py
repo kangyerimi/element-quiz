@@ -20,6 +20,14 @@ class Quiz:
         """사용자가 고른 번호가 정답이면 True, 아니면 False를 돌려준다."""
         return user_answer == self.answer
 
+    def to_dict(self):
+        """JSON 파일에 저장할 수 있도록 dict 형태로 바꿔서 돌려준다."""
+        return {
+            "question": self.question,
+            "choices": self.choices,
+            "answer": self.answer,
+        }
+
 
 def get_default_quizzes():
     """처음 실행할 때 사용할 기본 원소 퀴즈 목록을 돌려준다."""

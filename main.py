@@ -1,4 +1,8 @@
-from quiz import get_default_quizzes
+import json
+
+from quiz import Quiz, get_default_quizzes
+
+STATE_FILE = "state.json"  # 저장 파일 이름 (프로젝트 폴더에 생김)
 
 
 def show_menu():
@@ -42,6 +46,57 @@ def get_number(prompt, min_value, max_value):
         return number
 
 
+def load_state():
+    """state.json에서 퀴즈 목록과 최고 점수를 불러온다.
+    파일이 없거나 손상되면 기본 퀴즈로 시작한다."""
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as file:
+            data = json.load(file)
+
+        quizzes = []
+        for item in data["quizzes"]:
+            quiz = Quiz(item["question"], item["choices"], item["answer"])
+            quizzes.append(quiz)
+        best_score = data["best_score"]
+
+        print(f"📂 저장된 데이터를 불러왔습니다. (퀴즈 {len(quizzes)}개)")
+        return quizzes, best_score
+
+    except FileNotFoundError:
+        # 첫 실행: 파일이 아직 없음
+        print("📂 저장된 데이터가 없어 기본 퀴즈로 시작합니다.")
+        return get_default_quizzes(), None
+
+    except (ValueError, KeyError, TypeError):
+        # 파일 내용이 깨졌거나 형식이 이상함
+        print("⚠️ 저장 파일이 손상되어 기본 퀴즈로 복구합니다.")
+        return get_default_quizzes(), None
+
+    except OSError:
+        # 그 밖에 파일을 읽을 수 없는 경우
+        print("⚠️ 저장 파일을 읽을 수 없어 기본 퀴즈로 시작합니다.")
+        return get_default_quizzes(), None
+
+
+def save_state(quizzes, best_score):
+    """퀴즈 목록과 최고 점수를 state.json에 저장한다."""
+    quiz_list = []
+    for quiz in quizzes:
+        quiz_list.append(quiz.to_dict())
+
+    data = {
+        "quizzes": quiz_list,
+        "best_score": best_score,
+    }
+
+    try:
+        with open(STATE_FILE, "w", encoding="utf-8") as file:
+            json.dump(data, file, ensure_ascii=False, indent=4)
+        print("💾 데이터를 저장했습니다.")
+    except OSError:
+        print("⚠️ 데이터를 저장하지 못했습니다.")
+
+
 def play_quiz(quizzes):
     """퀴즈를 순서대로 출제하고 결과를 보여준다."""
     # 퀴즈가 하나도 없는 경우
@@ -73,7 +128,7 @@ def play_quiz(quizzes):
 
 def main():
     """프로그램 전체 흐름을 담당한다."""
-    quizzes = get_default_quizzes()
+    quizzes, best_score = load_state()
 
     try:
         while True:
@@ -89,11 +144,14 @@ def main():
             elif choice == 4:
                 print("🏆 점수 확인 기능은 준비 중입니다.")
             elif choice == 5:
+                save_state(quizzes, best_score)
                 print("👋 게임을 종료합니다. 다음에 또 만나요!")
                 break
 
     except (KeyboardInterrupt, EOFError):
-        print("\n\n⚠️ 프로그램이 중단되었습니다. 안전하게 종료합니다.")
+        print("\n\n⚠️ 프로그램이 중단되었습니다.")
+        save_state(quizzes, best_score)
+        print("안전하게 종료합니다.")
 
 
 if __name__ == "__main__":
