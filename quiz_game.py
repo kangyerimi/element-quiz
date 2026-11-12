@@ -1,11 +1,14 @@
 import json
 import os
+import shutil
 
 from quiz import Quiz, get_default_quizzes
 
 # 저장 파일 경로: 어느 폴더에서 실행해도 항상 "프로젝트 루트"의 state.json을 사용한다.
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 STATE_FILE = os.path.join(PROJECT_ROOT, "state.json")
+BACKUP_FILE = STATE_FILE + ".bak"   # 손상된 파일을 복구하기 전에 보관하는 백업
+TEMP_FILE = STATE_FILE + ".tmp"     # 저장 도중 끊겨도 원본이 깨지지 않도록 쓰는 임시 파일
 
 
 class QuizGame:
@@ -92,14 +95,36 @@ class QuizGame:
             self.reset_to_default()
 
         except (ValueError, KeyError, TypeError):
-            # 파일 내용이 깨졌거나 형식이 이상함
+            # 파일 내용이 깨졌거나 형식이 이상함 → 원본을 백업한 뒤 기본 퀴즈로 복구
             print("⚠️ 저장 파일이 손상되어 기본 퀴즈로 복구합니다.")
+            self.backup_broken_file()
+            self.reset_to_default()
+
+        except PermissionError:
+            # 파일은 있지만 읽을 권한이 없음
+            print("⚠️ state.json을 읽을 권한이 없어 기본 퀴즈로 시작합니다.")
+            self.print_permission_help()
             self.reset_to_default()
 
         except OSError:
             # 그 밖에 파일을 읽을 수 없는 경우
             print("⚠️ 저장 파일을 읽을 수 없어 기본 퀴즈로 시작합니다.")
             self.reset_to_default()
+
+    def backup_broken_file(self):
+        """손상된 state.json을 state.json.bak으로 복사해 둔다. (원본 보존)"""
+        try:
+            shutil.copyfile(STATE_FILE, BACKUP_FILE)
+            print("🗂️ 손상된 원본은 state.json.bak으로 백업했습니다.")
+        except OSError:
+            print("⚠️ 손상된 원본을 백업하지 못했습니다.")
+
+    def print_permission_help(self):
+        """파일 권한 오류가 났을 때 해결 방법을 안내한다."""
+        print(f"   파일 위치: {STATE_FILE}")
+        print("   ① 권한 확인:  ls -l state.json")
+        print("   ② 권한 수정:  chmod 644 state.json")
+        print("   ③ 프로젝트 폴더가 내 홈 폴더(~) 안에 있는지 확인하세요.")
 
     def check_quiz_data(self, item):
         """파일에서 읽은 퀴즈 한 개의 형식을 검사한다.
@@ -135,11 +160,19 @@ class QuizGame:
         }
 
         try:
-            with open(STATE_FILE, "w", encoding="utf-8") as file:
+            # 1) 임시 파일에 먼저 다 쓰고  2) 성공하면 한 번에 원본과 바꾼다.
+            #    → 쓰는 도중 멈춰도 원본 state.json은 깨지지 않는다.
+            with open(TEMP_FILE, "w", encoding="utf-8") as file:
                 json.dump(data, file, ensure_ascii=False, indent=4)
+            os.replace(TEMP_FILE, STATE_FILE)
             print("💾 데이터를 저장했습니다.")
+        except PermissionError:
+            print("⚠️ state.json에 쓸 권한이 없어 저장하지 못했습니다.")
+            self.print_permission_help()
+            print("   게임은 계속되며, 다음 저장 시점에 다시 저장을 시도합니다.")
         except OSError:
             print("⚠️ 데이터를 저장하지 못했습니다.")
+            print("   게임은 계속되며, 다음 저장 시점에 다시 저장을 시도합니다.")
 
     # ==================== 화면 & 기능 ====================
 
